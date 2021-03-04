@@ -58,6 +58,14 @@ end
 %
 %insert code for cuffs
 %
+cuffWidthHeight = 2.95;
+cuffStart = 1.5;
+for cuffWidth = 1:13
+    xCuff(cuffWidth) = cuffStart;
+    cuffStart = cuffStart + 1;
+    yCuff(cuffWidth) = 2.95;
+    plot(xCuff, yCuff, 'k-', 'LineWidth', 1.5);
+end
 
 
 %placeholder will be input for this function
@@ -89,7 +97,7 @@ update = inputArray;
 d_o = 0.2; %Initial node distance between two nodes after nudge
 d = 0.23; %Final node distance
 
-net_force_x = (d .- d_o).*((x_ne - x_value)./d)
+net_force_x = (d - d_o).*((x_ne - x_value)./d)
 %%Net force in x-direction. Zero is equilibrium
 
 index_n = 0; %x-position on the graph
@@ -214,15 +222,9 @@ while index_force < 500
             
 
 %NEED TO UPDATE FORCE EQUATION WITH THE ABOVE VARIABLES
-            net_force_x = k((dne - d_o).*((x_ne - x_val)./dne))- k(dnw - d_o).*((x_nw -
-            x_val) ./ dnw) + k(dse - d_o)*((x_se-x_val) / dse) - k(dsw-d_o).* ((x_sw -
-            x)./ dsw) + k(de - d_o) *((x_e - x_val)./de) - k(dn - do).* ((x_n -
-            x_val) ./ dn)
+            net_force_x = k((dne - d_o).*((x_ne - x_val)./dne))- k(dnw - d_o).*((x_nw - x_val) ./ dnw) + k(dse - d_o)*((x_se-x_val) / dse) - k(dsw-d_o).* ((x_sw - x)./ dsw) + k(de - d_o) *((x_e - x_val)./de) - k(dn - do).* ((x_n - x_val) ./ dn);
 
-            net_force_y = k((d - d_o).*((y_ne - y_val)./d))- k(d - d_o).*((y_nw -
-            y_val) ./ d) + k(d - d_o)*((y_se-y_val) / d) - k(d-d_o).* ((y_sw -
-            y)./ d) + k(d - d_o) *((y_e - y_val)./d) - k(d - do).* ((y_n -
-            y_val) ./ d)
+            net_force_y = k((d - d_o).*((y_ne - y_val)./d))- k(d - d_o).*((y_nw - y_val) ./ d) + k(d - d_o)*((y_se-y_val) / d) - k(d-d_o).* ((y_sw - y)./ d) + k(d - d_o) *((y_e - y_val)./d) - k(d - do).* ((y_n - y_val) ./ d)
 
             if net_force_x > 0 
                 updated(index_n, ((index_m * 2)-1)) = x_val + 0.0005;
@@ -252,6 +254,7 @@ while index_force < 500
     %change index number and add plotting 
     index_force = index_force + 1;
 end
+
 
 %k
 
@@ -288,6 +291,9 @@ end
 % end
 
     
+    
+        
+   
     
         
 
