@@ -8,9 +8,12 @@ y_value = 0;
 nudge_index = 0;
 counter_index = 0;
 y_index = 0;
+f1 = figure;
+f2 = figure;
+f3 = figure;
 
+%Creates the initial nodes
 
-%Creates 
 for col_index = 1:size_placeholder(2)
     
     if y_index == 2
@@ -44,12 +47,14 @@ end
 %%placeholder made here
 %%%%%Start here
 
+
 x_col = 1;
 y_col = 2;
 for plotting = 1:18
     hold on
     x_section = placeholder(:,x_col);
     y_section = placeholder(:,y_col);
+    figure(f1)
     plot(x_section,y_section,'b.')
     x_col = x_col + 2;
     y_col = y_col + 2;
@@ -58,6 +63,7 @@ end
 %
 %insert code for cuffs
 %
+
 cuffWidthHeight = 2.95;
 cuffStart = 1.5;
 for cuffWidth = 1:13
@@ -66,15 +72,24 @@ for cuffWidth = 1:13
     yCuff(cuffWidth) = 2.95;
     plot(xCuff, yCuff, 'k-', 'LineWidth', 1.5);
 end
+hold off
+%initialization for compression and nudging
+
+inputArray = placeholder;
+d_o = delta_x;
+index_n = 0; %x-position on the graph
+index_m = 0; %y-position on the graph
+x_val = 0; %x-position value; temporary storage 
+y_val = 0; %y-position value; temporary storage
 
 
 %placeholder will be input for this function
 %Iterate x and y positions from placeholder
 
-d_o = delta_x;
+
 
 % Net_Fx > 0 -> shitft = +0.0005
-%).  If the net x-directed force is > 0 , then nudge the node 5 microns to the right, etc.  If the net x-directed force is < 0 , then nudge the node 5 microns to the left, and similarly for the y-dimension.  
+%If the net x-directed force is > 0 , then nudge the node 5 microns to the right, etc.  If the net x-directed force is < 0 , then nudge the node 5 microns to the left, and similarly for the y-dimension.  
 % for possible = 1:500. 
     %per 1 iteration, do we have to test each node's net force?(75*36)
     % per each iteration, we find the positions of all nodes and then
@@ -90,49 +105,53 @@ d_o = delta_x;
 % x_sw = 0;
 % x_se = 0;
 
-update = [];
-update = inputArray;
 
-%not zero its o
-d_o = 0.2; %Initial node distance between two nodes after nudge
-d = 0.23; %Final node distance
 
-net_force_x = (d - d_o).*((x_ne - x_value)./d)
-%%Net force in x-direction. Zero is equilibrium
-
-index_n = 0; %x-position on the graph
-index_m = 0; %y-position on the graph
-x_val = 0; %x-position value; temporary storage 
-y_val = 0; %y-position value; temporary storage
-
+%To index from placeholder[inputarray]
 %indexing x-position(x,2y-1)
 %indexing y-position(x,2y)
-updated = inputArray; %this will be an updated array; Reduce naming confusion. 
+
+%Compression
 %iterates through all the nodes
 
+
+
 for index_n = 1:75 %x
-    for index_m = 18: 1 %y
+    for index_m = 18: -1 :1  %y
         %find main node; the node of interest; we will find nw, ne, sw, se
         %based on this node
         %Find node of interest
         x_val = inputArray(index_n, 2*index_m-1);
         y_val = inputArray(index_n, 2*index_m);
-        if abs(15 - x_val) <= 13.3 
-            update(index_n, 2*index_m-1) = y_val * 0.9;
-            update(index_n, 2*index_m) = x_val;
+        if abs(7.5 - x_val) <= 6 
+            update(index_n, 2*index_m-1) = x_val;
+            update(index_n, 2*index_m) = y_val * 0.9;
         else
-            update(index_n, 2*index_m-1) = y_val;
-            update(index_n, 2*index_m) = x_val;
+            update(index_n, 2*index_m-1) = x_val;
+            update(index_n, 2*index_m) = y_val;
         end
     end
 end
 
-inputArray()
-index_force = 0
+x_col = 1;
+y_col = 2;
+for plotting_23 = 1:18
+    hold on
+    x_section = update(:,x_col);
+    y_section = update(:,y_col);
+    figure(f2)
+    plot(x_section,y_section,'b.')
+    x_col = x_col + 2;
+    y_col = y_col + 2;
+end
+%k
+
+
+k = 1; %k eventualy cancels out during net force calculations. 
+index_force = 0;
 while index_force < 500
-    
-    for index_n = 1:75 %x
-        for index_m = 18: 1 %y
+    for index_m = 1:18 %y
+        for index_n = 1:75 %x
             %find main node; the node of interest; we will find nw, ne, sw, se
             %based on this node
             %Find node of interest
@@ -150,66 +169,143 @@ while index_force < 500
             if rem(index_m, 2) == 0 %even 
                 %nw
                 %index_n - 1 , index_m + 1
-                x_nw = update((index_n - 1),2*(index_m+1) -1 );
-                y_nw = update((index_n - 1), 2* (index_m+1));
-
+                
+                
+                if index_m == 18 || index_n == 1
+                    x_nw = x_val; %making the equation zero
+                    y_nw = y_val;
+                else
+                    x_nw = update((index_n - 1), 2*(index_m + 1) -1);
+                    y_nw = update((index_n - 1), 2* (index_m + 1));
+                end
+                
                 %ne
                 %index_n, index_m +1
-                x_ne = update(index_n, 2* (index_m + 1) -1);
-                x_nw = update(index_n, 2* (index_m + 1));
+                
+                if index_m == 18 || index_n == 75
+                    x_ne = x_val; %making the equation zero
+                    y_ne = y_val;
+                else
+                    x_ne = update(index_n, 2* (index_m + 1) -1);
+                    y_ne = update(index_n, 2* (index_m + 1));
+                end
 
                 %w
                 %index_n - 1, index_m
-                x_w = update((index_n - 1), 2* index_m - 1);
-                y_w = update((index_n-1), 2*index_m); 
-
+                
+                if index_n == 1
+                    x_w = x_val; %making the equation zero
+                    y_w = y_val;
+                else
+                    x_w = update((index_n - 1), 2* index_m - 1);
+                    y_w = update((index_n-1), 2*index_m); 
+                end
+                
                 %e
                 %index_n + 1, index_m
-                x_e = update((index_n + 1), 2* (index_m));
-                y_e = update((index_n + 1), 2* (index_m - 1));
-
+                
+                if index_n == 75
+                    x_e = x_val; %making the equation zero
+                    y_e = y_val;
+                else
+                    x_e = update((index_n + 1), 2* index_m - 1);
+                    y_e = update((index_n + 1), 2*index_m); 
+                end
+                
                 %sw 
-                %index_n + 1, index_m - 1
-                x_sw = update((index_n + 1), 2* (index_m - 1) - 1);
-                y_sw = update((input_n + 1),  2* (index_m - 1)); 
-
+                %index_n , index_m - 1
+                
+                if index_m == 1 || index_n == 1
+                    x_sw = x_val; %making the equation zero
+                    y_sw = y_val;
+                else
+                    x_sw = update((index_n), 2* (index_m - 1) - 1);
+                    y_sw = update((index_n),  2* (index_m - 1));
+                end
+                
                 %se 
-                %index_n, index_m - 1
-                x_se = update(index_n, 2* (index_m - 1) - 1);
-                y_se = update(index_n, 2* (index_m - 1));
-
+                %index_n + 1, index_m - 1
+                
+                if index_m == 1 || index_n == 75
+                    x_se = x_val; %making the equation zero
+                    y_se = y_val;
+                else
+                    x_se = update(index_n + 1, 2* (index_m - 1) - 1);
+                    y_se = update(index_n + 1, 2* (index_m - 1));
+                end
+                
             else    %odd
                 %nw
                 %index_n, index_m + 1
-                x_nw = update((index_n),2*(index_m+1) -1 );
-                y_nw = update((index_n), 2* (index_m + 1));
-
+                
+                
+                if index_m == 18 || index_n == 1
+                    x_nw = x_val; %making the equation zero
+                    y_nw = y_val;
+                else
+                    x_nw = update((index_n),2*(index_m+1) -1 );
+                    y_nw = update((index_n), 2* (index_m + 1));
+                end
+                
                 %ne
                 %index_n + 1, index_m +1
-                x_ne = update(index_n + 1, 2* (index_m + 1) -1);
-                y_nw = update(index_n + 1, 2* (index_m + 1));
-
+                
+                
+                if index_m == 18 || index_n == 75
+                    x_ne = x_val; %making the equation zero
+                    y_ne = y_val;
+                else
+                    x_ne = update(index_n + 1, 2* (index_m + 1) -1);
+                    y_ne = update(index_n + 1, 2* (index_m + 1));
+                end
+                
                 %w
                 %index_n - 1, index_m
-                x_w = update((index_n - 1), 2* index_m - 1);
-                y_w = update((index_n-1), 2*index_m); 
+                
+                if  index_n == 1
+                    x_w = x_val; %making the equation zero
+                    y_w = y_val;
+                else
+                    x_w = update(index_n - 1, 2* index_m -1);
+                    y_w = update(index_n - 1, 2* index_m );
+                end
 
                 %e
                 %index_n + 1, index_m
-                x_e = update((index_n + 1), 2* (index_m));
-                y_e = update((index_n + 1), 2* (index_m - 1));
-
+                
+                if  index_n == 75
+                    x_e = x_val; %making the equation zero
+                    y_e = y_val;
+                else
+                    x_e = update(index_n + 1, 2* index_m - 1);
+                    y_e = update(index_n + 1, 2* index_m);
+                end
+                
                 %sw 
                 %index_n, index_m - 1
-                x_sw = update((index_n), 2* (index_m - 1) - 1);
-                y_sw = update((input_n),  2* (index_m - 1)); 
-
+                 
+                if index_m == 1 || index_n == 1
+                    x_sw = x_val; %making the equation zero
+                    y_sw = y_val;
+                else
+                    x_sw = update((index_n), 2* (index_m - 1) - 1);
+                    y_sw = update((index_n),  2* (index_m - 1));
+                end
+                
                 %se 
                 %index_n + 1, index_m - 1
-                x_se = update(index_n + 1, 2* (index_m - 1) - 1);
-                y_se = update(index_n + 1, 2* (index_m - 1));
+                
+                if index_m == 1 || index_n == 75
+                    x_se = x_val; %making the equation zero
+                    y_se = y_val;
+                else
+                    x_se = update(index_n + 1, 2* (index_m - 1) - 1);
+                    y_se = update(index_n + 1, 2* (index_m - 1));
+                end
             end
 
+            
+            
             %x
             %%Force Equations enter
             dnw = sqrt((x_nw - x_val)^2 + (y_nw - y_val)^2);
@@ -219,81 +315,66 @@ while index_force < 500
             dsw = sqrt((x_sw - x_val)^2 + (y_sw - y_val)^2);
             dse = sqrt((x_se - x_val)^2 + (y_se - y_val)^2); 
 
-            
+            %directional k-prime values
+            kp_ne = k*(dne - d_o) / dne;
+            kp_nw = k*(dnw - d_o) / dnw;
+            kp_se = k*(dse - d_o) / dse;
+            kp_sw = k*(dsw - d_o) / dsw;
+            kp_e = k*(de - d_o) / de;
+            kp_w = k*(dw - d_o) / dw;
 
 %NEED TO UPDATE FORCE EQUATION WITH THE ABOVE VARIABLES
-            net_force_x = k((dne - d_o).*((x_ne - x_val)./dne))- k(dnw - d_o).*((x_nw - x_val) ./ dnw) + k(dse - d_o)*((x_se-x_val) / dse) - k(dsw-d_o).* ((x_sw - x)./ dsw) + k(de - d_o) *((x_e - x_val)./de) - k(dn - do).* ((x_n - x_val) ./ dn);
-
-            net_force_y = k((d - d_o).*((y_ne - y_val)./d))- k(d - d_o).*((y_nw - y_val) ./ d) + k(d - d_o)*((y_se-y_val) / d) - k(d-d_o).* ((y_sw - y)./ d) + k(d - d_o) *((y_e - y_val)./d) - k(d - do).* ((y_n - y_val) ./ d)
+            net_force_x = (kp_ne * (x_ne - x_val)) - (kp_nw* (x_nw - x_val)) + (kp_se * (x_se - x_val)) - (kp_sw * (x_sw - x_val)) +  (kp_e * (x_e - x_val)) - (kp_w * (x_w - x_val));
+            net_force_y = (kp_ne * (y_ne - y_val)) - (kp_nw* (y_nw - y_val)) + (kp_se * (y_se - y_val)) - (kp_sw * (y_sw - y_val)) +  (kp_e * (y_e - y_val)) - (kp_w * (y_w - y_val));
+            
 
             if net_force_x > 0 
-                updated(index_n, ((index_m * 2)-1)) = x_val + 0.0005;
+                update(index_n, ((index_m * 2)-1)) = x_val + 0.0005;
 
             elseif net_force_x < 0 
-                updated(index_n, ((index_m * 2)-1)) = x_val - 0.0005;
+                update(index_n, ((index_m * 2)-1)) = x_val - 0.0005;
 
             else
-                updated(index_n, ((index_m*2) -1)) = x_val;
+                update(index_n, ((index_m*2) -1)) = x_val;
 
             end
 
             %y
             if net_force_y > 0 
-                updated(index_n, (index_m * 2)) = y_val + 0.0005;
+                update(index_n, (index_m * 2)) = y_val + 0.0005;
             elseif net_force_y < 0 
-                updated(index_n, (index_m * 2)) = y_val - 0.0005;
+                update(index_n, (index_m * 2)) = y_val - 0.0005;
             else
-                updated(index_n, (index_m*2)) = y_val;
+                update(index_n, (index_m*2)) = y_val;
             end
+            
+            
         end
     end
-    
-    
-    temp_not = update;
+   
     
     %change index number and add plotting 
     index_force = index_force + 1;
 end
 
 
+x_col = 1;
+y_col = 2;
+for plotting_2 = 1:18
+    hold on
+    x_section = update(:,x_col);
+    y_section = update(:,y_col);
+    figure(f3)
+    plot(x_section,y_section,'b-.')
+    x_col = x_col + 2;
+    y_col = y_col + 2;
+end
 %k
+hold off
 
 
-%         %y
-% 
-%         end
-%     end
-%     end
-% 
-% %update matrix
-% %force added
-% 
-% 
-% 
-% 
-% if net_force_x > 0 
-%     updated(index_n, ((index_m * 2)-1)) = x_val + 0.0005;
-% elseif net_force_x < 0 
-%     updated(index_n, ((index_m * 2)-1)) = x_val - 0.0005;
-% else
-%     updated(index_n, ((index_m*2) -1)) = x_val;
-%     
-% end
-% 
-% 
-% if net_force_y > 0 
-%     updated(index_n, (index_m * 2)) = y_val + 0.0005;
-% elseif net_force_y < 0 
-%     updated(index_n, (index_m * 2)) = y_val - 0.0005;
-% else
-%     updated(index_n, (index_m*2)) = y_val;
-%     
-% end
 
     
-    
-        
-   
     
         
 
