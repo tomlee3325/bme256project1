@@ -1,63 +1,111 @@
+% %Initialization 
+% % placeholder = zeros(75,36);
+% % delta_x = .2;
+% % delta_y = sqrt(.03);
+% % size_placeholder = size(placeholder);
+% % x_value = 0;
+% % y_value = 0;
+% % nudge_index = 0;
+% % counter_index = 0;
+% % y_index = 0;
+% % f1 = figure;
+% % f2 = figure;
+% % f3 = figure;
+% 
+% %Creates the initial nodes
+% 
+% for col_index = 1:size_placeholder(2)
+%     
+%     if y_index == 2
+%         y_value = y_value + delta_y;
+%         y_index = 0;
+%     end
+%   
+%     if counter_index == 4
+%         x_value = 0;
+%         counter_index = 0;
+%         nudge_index = 1;
+%     elseif nudge_index == 2
+%         x_value = delta_x / 2;
+%         %nudge_index = 0;
+%     end
+%     
+%     for row_index = 1:size_placeholder(1)
+%         if rem(col_index,2) == 0 % even column so y values
+%             placeholder(row_index,col_index) = y_value;
+%         else
+%             placeholder(row_index,col_index) = x_value;
+%             x_value = delta_x + x_value;
+%         end
+%     end
+%     
+%     nudge_index = nudge_index + 1;
+%     counter_index = counter_index + 1;
+%     y_index = y_index + 1;
+% end
+% 
+% %%placeholder made here
+% %%%%%Start here
+% 
+% 
+% x_col = 1;
+% y_col = 2;
+% for plotting = 1:18
+%     hold on
+%     x_section = placeholder(:,x_col);
+%     y_section = placeholder(:,y_col);
+%     figure(f1)
+%     plot(x_section,y_section,'b.')
+%     x_col = x_col + 2;
+%     y_col = y_col + 2;
+% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Initialization 
-placeholder = zeros(75,36);
+
+placeholder_x = zeros(75,18);
+placeholder_y = zeros(75,18);
 delta_x = .2;
 delta_y = sqrt(.03);
-size_placeholder = size(placeholder);
+size_placeholder = size(placeholder_x);
 x_value = 0;
 y_value = 0;
-nudge_index = 0;
+shift_index = 0;
 counter_index = 0;
 y_index = 0;
 f1 = figure;
 f2 = figure;
 f3 = figure;
 
-%Creates the initial nodes
+x_col = 1;
+y_col = 1;
 
 for col_index = 1:size_placeholder(2)
-    
-    if y_index == 2
-        y_value = y_value + delta_y;
-        y_index = 0;
-    end
-  
-    if counter_index == 4
-        x_value = 0;
-        counter_index = 0;
-        nudge_index = 1;
-    elseif nudge_index == 2
-        x_value = delta_x / 2;
-        %nudge_index = 0;
-    end
-    
     for row_index = 1:size_placeholder(1)
-        if rem(col_index,2) == 0 % even column so y values
-            placeholder(row_index,col_index) = y_value;
-        else
-            placeholder(row_index,col_index) = x_value;
-            x_value = delta_x + x_value;
+        if rem(col_index,2) == 1 % starting is 0
+            placeholder_x(row_index,col_index) = x_value;
+        else % starting is .1
+            placeholder_x(row_index,col_index) = x_value + delta_x/2;
         end
+        x_value = delta_x + x_value;
     end
-    
-    nudge_index = nudge_index + 1;
-    counter_index = counter_index + 1;
-    y_index = y_index + 1;
+    x_value = 0;
 end
 
-%%placeholder made here
-%%%%%Start here
+for col_index = 1:size_placeholder(2)
+    for row_index = 1:size_placeholder(1)
+        placeholder_y(row_index,col_index)= y_value;
+    end
+    y_value = y_value + delta_y;
+end
 
-
-x_col = 1;
-y_col = 2;
 for plotting = 1:18
     hold on
-    x_section = placeholder(:,x_col);
-    y_section = placeholder(:,y_col);
-    figure(f1)
+    x_section = placeholder_x(:,x_col);
+    y_section = placeholder_y(:,y_col);
+    figure(1)
     plot(x_section,y_section,'b.')
-    x_col = x_col + 2;
-    y_col = y_col + 2;
+    x_col = x_col + 1;
+    y_col = y_col + 1;
 end
 
 %
@@ -75,7 +123,8 @@ end
 hold off
 %initialization for compression and nudging
 
-inputArray = placeholder;
+compress_x = zeros(75,18);
+compress_y = zeros(75,18);
 d_o = delta_x;
 index_n = 0; %x-position on the graph
 index_m = 0; %y-position on the graph
@@ -117,46 +166,50 @@ y_val = 0; %y-position value; temporary storage
 
 
 for index_n = 1:75 %x
-    for index_m = 18: -1 :1  %y
+    for index_m = 1:18  %y
         %find main node; the node of interest; we will find nw, ne, sw, se
         %based on this node
         %Find node of interest
-        x_val = inputArray(index_n, 2*index_m-1);
-        y_val = inputArray(index_n, 2*index_m);
+        x_val = placeholder_x(index_n, index_m);
+        y_val = placeholder_y(index_n, index_m);
         if abs(7.5 - x_val) <= 6 
-            update(index_n, 2*index_m-1) = x_val;
-            update(index_n, 2*index_m) = y_val * 0.9;
+            compress_x(index_n, index_m) = x_val;
+            compress_y(index_n, index_m) = y_val * 0.9;
         else
-            update(index_n, 2*index_m-1) = x_val;
-            update(index_n, 2*index_m) = y_val;
+            compress_x(index_n, index_m) = x_val;
+            compress_y(index_n, index_m) = y_val;
         end
     end
 end
 
 x_col = 1;
-y_col = 2;
+y_col = 1;
 for plotting_23 = 1:18
     hold on
-    x_section = update(:,x_col);
-    y_section = update(:,y_col);
+    x_section = compress_x(:,x_col);
+    y_section = compress_y(:,y_col);
     figure(f2)
     plot(x_section,y_section,'b.')
-    x_col = x_col + 2;
-    y_col = y_col + 2;
+    x_col = x_col + 1;
+    y_col = y_col + 1;
 end
+hold off
 %k
 
-
+nudge_x = compress_x;
+nudge_y = compress_y;
+nudge_temp_x = zeros(75,18);
+nudge_temp_y = zeros(75,18);
 k = 1; %k eventualy cancels out during net force calculations. 
 index_force = 0;
-while index_force < 500
-    for index_m = 1:18 %y
-        for index_n = 1:75 %x
+while index_force < 75
+    for index_n = 1:75 %y   m - 1 1:18
+        for index_m = 1:18 %x
             %find main node; the node of interest; we will find nw, ne, sw, se
             %based on this node
             %Find node of interest
-            x_val = update(index_n, 2*index_m-1);
-            y_val = update(index_n, 2*index_m);
+            x_val = nudge_x(index_n, index_m);
+            y_val = nudge_y(index_n, index_m);
 
             %use index_m to determine if it is odd row or even row
             %for instance, m represent 1,2,3,4,5,6,7,8,9th row and so on.
@@ -166,17 +219,17 @@ while index_force < 500
             %find adjacent node positions
             %we will always code in this order
             %nw -> ne -> w-> e -> sw -> se
-            if rem(index_m, 2) == 0 %even 
+            if rem(index_m, 2) == 1 %odd
                 %nw
-                %index_n - 1 , index_m + 1
+                %index_n -1 , index_m + 1
                 
                 
                 if index_m == 18 || index_n == 1
                     x_nw = x_val; %making the equation zero
                     y_nw = y_val;
                 else
-                    x_nw = update((index_n - 1), 2*(index_m + 1) -1);
-                    y_nw = update((index_n - 1), 2* (index_m + 1));
+                    x_nw = nudge_x(index_n - 1, index_m + 1);
+                    y_nw = nudge_y(index_n - 1, index_m + 1);
                 end
                 
                 %ne
@@ -186,8 +239,8 @@ while index_force < 500
                     x_ne = x_val; %making the equation zero
                     y_ne = y_val;
                 else
-                    x_ne = update(index_n, 2* (index_m + 1) -1);
-                    y_ne = update(index_n, 2* (index_m + 1));
+                    x_ne = nudge_x(index_n, index_m + 1);
+                    y_ne = nudge_y(index_n, index_m + 1);
                 end
 
                 %w
@@ -197,8 +250,8 @@ while index_force < 500
                     x_w = x_val; %making the equation zero
                     y_w = y_val;
                 else
-                    x_w = update((index_n - 1), 2* index_m - 1);
-                    y_w = update((index_n-1), 2*index_m); 
+                    x_w = nudge_x(index_n - 1, index_m);
+                    y_w = nudge_y(index_n - 1, index_m);
                 end
                 
                 %e
@@ -208,33 +261,33 @@ while index_force < 500
                     x_e = x_val; %making the equation zero
                     y_e = y_val;
                 else
-                    x_e = update((index_n + 1), 2* index_m - 1);
-                    y_e = update((index_n + 1), 2*index_m); 
+                    x_e = nudge_x(index_n + 1, index_m);
+                    y_e = nudge_y(index_n + 1, index_m); 
                 end
                 
                 %sw 
-                %index_n , index_m - 1
+                %index_n - 1 , index_m - 1
                 
                 if index_m == 1 || index_n == 1
                     x_sw = x_val; %making the equation zero
                     y_sw = y_val;
                 else
-                    x_sw = update((index_n), 2* (index_m - 1) - 1);
-                    y_sw = update((index_n),  2* (index_m - 1));
+                    x_sw = nudge_x(index_n - 1, index_m - 1);
+                    y_sw = nudge_y(index_n - 1, index_m - 1);
                 end
                 
                 %se 
-                %index_n + 1, index_m - 1
+                %index_n, index_m - 1
                 
                 if index_m == 1 || index_n == 75
                     x_se = x_val; %making the equation zero
                     y_se = y_val;
                 else
-                    x_se = update(index_n + 1, 2* (index_m - 1) - 1);
-                    y_se = update(index_n + 1, 2* (index_m - 1));
+                    x_se = nudge_x(index_n, index_m - 1);
+                    y_se = nudge_y(index_n, index_m - 1);
                 end
                 
-            else    %odd
+            else    %even
                 %nw
                 %index_n, index_m + 1
                 
@@ -243,8 +296,8 @@ while index_force < 500
                     x_nw = x_val; %making the equation zero
                     y_nw = y_val;
                 else
-                    x_nw = update((index_n),2*(index_m+1) -1 );
-                    y_nw = update((index_n), 2* (index_m + 1));
+                    x_nw = nudge_x(index_n , index_m + 1);
+                    y_nw = nudge_y(index_n , index_m + 1);
                 end
                 
                 %ne
@@ -255,8 +308,8 @@ while index_force < 500
                     x_ne = x_val; %making the equation zero
                     y_ne = y_val;
                 else
-                    x_ne = update(index_n + 1, 2* (index_m + 1) -1);
-                    y_ne = update(index_n + 1, 2* (index_m + 1));
+                    x_ne = nudge_x(index_n + 1, index_m + 1);
+                    y_ne = nudge_y(index_n + 1, index_m + 1);
                 end
                 
                 %w
@@ -266,8 +319,8 @@ while index_force < 500
                     x_w = x_val; %making the equation zero
                     y_w = y_val;
                 else
-                    x_w = update(index_n - 1, 2* index_m -1);
-                    y_w = update(index_n - 1, 2* index_m );
+                    x_w = nudge_x(index_n - 1, index_m);
+                    y_w = nudge_y(index_n - 1, index_m);
                 end
 
                 %e
@@ -277,8 +330,8 @@ while index_force < 500
                     x_e = x_val; %making the equation zero
                     y_e = y_val;
                 else
-                    x_e = update(index_n + 1, 2* index_m - 1);
-                    y_e = update(index_n + 1, 2* index_m);
+                    x_e = nudge_x(index_n + 1, index_m);
+                    y_e = nudge_y(index_n + 1, index_m);
                 end
                 
                 %sw 
@@ -288,8 +341,8 @@ while index_force < 500
                     x_sw = x_val; %making the equation zero
                     y_sw = y_val;
                 else
-                    x_sw = update((index_n), 2* (index_m - 1) - 1);
-                    y_sw = update((index_n),  2* (index_m - 1));
+                    x_sw = nudge_x(index_n, index_m - 1);
+                    y_sw = nudge_y(index_n, index_m - 1);
                 end
                 
                 %se 
@@ -299,8 +352,8 @@ while index_force < 500
                     x_se = x_val; %making the equation zero
                     y_se = y_val;
                 else
-                    x_se = update(index_n + 1, 2* (index_m - 1) - 1);
-                    y_se = update(index_n + 1, 2* (index_m - 1));
+                    x_se = nudge_x(index_n + 1, index_m - 1);
+                    y_se = nudge_y(index_n + 1, index_m - 1);
                 end
             end
 
@@ -324,50 +377,56 @@ while index_force < 500
             kp_w = k*(dw - d_o) / dw;
 
 %NEED TO UPDATE FORCE EQUATION WITH THE ABOVE VARIABLES
-            net_force_x = (kp_ne * (x_ne - x_val)) - (kp_nw* (x_nw - x_val)) + (kp_se * (x_se - x_val)) - (kp_sw * (x_sw - x_val)) +  (kp_e * (x_e - x_val)) - (kp_w * (x_w - x_val));
-            net_force_y = (kp_ne * (y_ne - y_val)) - (kp_nw* (y_nw - y_val)) + (kp_se * (y_se - y_val)) - (kp_sw * (y_sw - y_val)) +  (kp_e * (y_e - y_val)) - (kp_w * (y_w - y_val));
+                net_force_x = (kp_ne * (x_ne - x_val)) - (kp_nw* (x_nw - x_val)) + (kp_se * (x_se - x_val)) - (kp_sw * (x_sw - x_val)) +  (kp_e * (x_e - x_val)) - (kp_w * (x_w - x_val));
+                net_force_y = (kp_ne * (y_ne - y_val)) - (kp_nw* (y_nw - y_val)) + (kp_se * (y_se - y_val)) - (kp_sw * (y_sw - y_val)) +  (kp_e * (y_e - y_val)) - (kp_w * (y_w - y_val));
             
-
+%             net_force_x = -(kp_ne * (x_ne - x_val)) + (kp_nw* (x_nw - x_val)) - (kp_se * (x_se - x_val)) + (kp_sw * (x_sw - x_val)) - (kp_e * (x_e - x_val)) + (kp_w * (x_w - x_val));
+%             net_force_y = -(kp_ne * (y_ne - y_val)) + (kp_nw* (y_nw - y_val)) - (kp_se * (y_se - y_val)) + (kp_sw * (y_sw - y_val)) -  (kp_e * (y_e - y_val)) + (kp_w * (y_w - y_val));
+%             
             if net_force_x > 0 
-                update(index_n, ((index_m * 2)-1)) = x_val + 0.0005;
+                nudge_temp_x(index_n, index_m) = x_val + 0.0005;
 
             elseif net_force_x < 0 
-                update(index_n, ((index_m * 2)-1)) = x_val - 0.0005;
+                nudge_temp_x(index_n, index_m) = x_val - 0.0005;
 
             else
-                update(index_n, ((index_m*2) -1)) = x_val;
+                nudge_temp_x(index_n, index_m) = x_val;
 
             end
 
             %y
             if net_force_y > 0 
-                update(index_n, (index_m * 2)) = y_val + 0.0005;
+                nudge_temp_y(index_n, index_m) = y_val + 0.0005;
+
             elseif net_force_y < 0 
-                update(index_n, (index_m * 2)) = y_val - 0.0005;
+                nudge_temp_y(index_n, index_m) = y_val - 0.0005;
+
             else
-                update(index_n, (index_m*2)) = y_val;
+                nudge_temp_y(index_n, index_m) = y_val;
+
             end
             
             
         end
     end
    
-    
+    nudge_x = nudge_temp_x;
+    nudge_y = nudge_temp_y;
     %change index number and add plotting 
     index_force = index_force + 1;
 end
 
 
 x_col = 1;
-y_col = 2;
+y_col = 1;
 for plotting_2 = 1:18
     hold on
-    x_section = update(:,x_col);
-    y_section = update(:,y_col);
+    x_section = nudge_x(:,x_col);
+    y_section = nudge_y(:,y_col);
     figure(f3)
-    plot(x_section,y_section,'b-.')
-    x_col = x_col + 2;
-    y_col = y_col + 2;
+    plot(x_section,y_section,'b.-')
+    x_col = x_col + 1;
+    y_col = y_col + 1;
 end
 %k
 hold off
