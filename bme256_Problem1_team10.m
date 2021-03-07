@@ -62,8 +62,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Initialization 
 
-placeholder_x = zeros(75,18);
-placeholder_y = zeros(75,18);
+placeholder_x = zeros(75,19);
+placeholder_y = zeros(75,19);
 delta_x = .2;
 delta_y = sqrt(.03);
 size_placeholder = size(placeholder_x);
@@ -112,8 +112,12 @@ end
 %insert code for cuffs
 %
 
+model_width = 14.9;
 cuffWidthHeight = 2.95;
 cuffStart = 1.5;
+cuffEnd = model_width - cuffStart; 
+cuffwidth = 2; 
+
 for cuffWidth = 1:13
     xCuff(cuffWidth) = cuffStart;
     cuffStart = cuffStart + 1;
@@ -123,8 +127,8 @@ end
 hold off
 %initialization for compression and nudging
 
-compress_x = zeros(75,18);
-compress_y = zeros(75,18);
+compress_x = zeros(75,19);
+compress_y = zeros(75,19);
 d_o = delta_x;
 index_n = 0; %x-position on the graph
 index_m = 0; %y-position on the graph
@@ -166,13 +170,13 @@ y_val = 0; %y-position value; temporary storage
 
 
 for index_n = 1:75 %x
-    for index_m = 1:18  %y
+    for index_m = 1:19 %y
         %find main node; the node of interest; we will find nw, ne, sw, se
         %based on this node
         %Find node of interest
         x_val = placeholder_x(index_n, index_m);
         y_val = placeholder_y(index_n, index_m);
-        if abs(7.5 - x_val) <= 6 
+        if abs((model_width / 2) - x_val) <= ((cuffwidth) / 2)   %15 -> model width , 12 -> cuff width
             compress_x(index_n, index_m) = x_val;
             compress_y(index_n, index_m) = y_val * 0.9;
         else
@@ -198,13 +202,13 @@ hold off
 
 nudge_x = compress_x;
 nudge_y = compress_y;
-nudge_temp_x = zeros(75,18);
-nudge_temp_y = zeros(75,18);
+nudge_temp_x = zeros(75,19);
+nudge_temp_y = zeros(75,19);
 k = 1; %k eventualy cancels out during net force calculations. 
 index_force = 0;
-while index_force < 75
+while index_force < 500
     for index_n = 1:75 %y   m - 1 1:18
-        for index_m = 1:18 %x
+        for index_m = 1:19 %x
             %find main node; the node of interest; we will find nw, ne, sw, se
             %based on this node
             %Find node of interest
@@ -222,20 +226,21 @@ while index_force < 75
             if rem(index_m, 2) == 1 %odd
                 %nw
                 %index_n -1 , index_m + 1
+               % (index_m == 18 && abs((model_width / 2) - nudge_x(index_m, index_n)) > (model_width - cuffwidth))
                 
-                
-                if index_m == 18 || index_n == 1
+                if index_n == 1 || index_m == 19
                     x_nw = x_val; %making the equation zero
                     y_nw = y_val;
                 else
                     x_nw = nudge_x(index_n - 1, index_m + 1);
                     y_nw = nudge_y(index_n - 1, index_m + 1);
+                    
                 end
                 
                 %ne
                 %index_n, index_m +1
                 
-                if index_m == 18 || index_n == 75
+                if index_m == 19 || index_n == 75
                     x_ne = x_val; %making the equation zero
                     y_ne = y_val;
                 else
@@ -292,7 +297,7 @@ while index_force < 75
                 %index_n, index_m + 1
                 
                 
-                if index_m == 18 || index_n == 1
+                if index_m == 19 || index_n == 1
                     x_nw = x_val; %making the equation zero
                     y_nw = y_val;
                 else
@@ -304,7 +309,7 @@ while index_force < 75
                 %index_n + 1, index_m +1
                 
                 
-                if index_m == 18 || index_n == 75
+                if index_m == 19 || index_n == 75
                     x_ne = x_val; %making the equation zero
                     y_ne = y_val;
                 else
@@ -377,8 +382,8 @@ while index_force < 75
             kp_w = k*(dw - d_o) / dw;
 
 %NEED TO UPDATE FORCE EQUATION WITH THE ABOVE VARIABLES
-                net_force_x = (kp_ne * (x_ne - x_val)) - (kp_nw* (x_nw - x_val)) + (kp_se * (x_se - x_val)) - (kp_sw * (x_sw - x_val)) +  (kp_e * (x_e - x_val)) - (kp_w * (x_w - x_val));
-                net_force_y = (kp_ne * (y_ne - y_val)) - (kp_nw* (y_nw - y_val)) + (kp_se * (y_se - y_val)) - (kp_sw * (y_sw - y_val)) +  (kp_e * (y_e - y_val)) - (kp_w * (y_w - y_val));
+                net_force_x = (kp_ne * (x_ne - x_val)) + (kp_nw* (x_nw - x_val)) + (kp_se * (x_se - x_val)) + (kp_sw * (x_sw - x_val)) +  (kp_e * (x_e - x_val)) + (kp_w * (x_w - x_val));
+                net_force_y = (kp_ne * (y_ne - y_val)) + (kp_nw* (y_nw - y_val)) + (kp_se * (y_se - y_val)) + (kp_sw * (y_sw - y_val)) +  (kp_e * (y_e - y_val)) + (kp_w * (y_w - y_val));
             
 %             net_force_x = -(kp_ne * (x_ne - x_val)) + (kp_nw* (x_nw - x_val)) - (kp_se * (x_se - x_val)) + (kp_sw * (x_sw - x_val)) - (kp_e * (x_e - x_val)) + (kp_w * (x_w - x_val));
 %             net_force_y = -(kp_ne * (y_ne - y_val)) + (kp_nw* (y_nw - y_val)) - (kp_se * (y_se - y_val)) + (kp_sw * (y_sw - y_val)) -  (kp_e * (y_e - y_val)) + (kp_w * (y_w - y_val));
