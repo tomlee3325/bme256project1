@@ -1,5 +1,6 @@
 %Program Description
 %BME 256 Accuracy of blood pressure readings
+%Hypothesis 2 
 %Team 10
 %Tom Lee
 %Denny Guo
