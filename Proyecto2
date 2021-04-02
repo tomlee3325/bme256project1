@@ -1,0 +1,83 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% Initialization %%%%
+
+Rate = 4 / 3;
+omega = 2 * pi * Rate;
+
+
+%Resistances:
+Rvo = 2700; % Vital organs: Heart & Brain (mmHg/(L/sec))
+Rp = 180; % Pulmonary arteries, capillaries, veins (mmHg/(L/sec))
+Rsa = 60; % Small in line restance of aorta (mmHg/(L/sec))
+Rsv = 60;  % Small in line resistance of vena cava (mmHg/(L/sec))
+Rl = 5400; % Legs (mmHg/(L/sec))
+
+%Compliances:
+Cao = 0.00104167; % Thoracic aorta (L/mmHg)
+Caa = 0.00052083; % Abdominal aorta (external pressure) (L/mmHg)
+Civc =  30 * Caa; % I. vena cava (external pressure) (L/mmHg)
+Crh = 30 * Cao; % Right heart: S.vena cava, RA, RV (L/mmHg)
+
+%Pressures:
+Paa = 0; 
+Pivc = 0;
+Pao = 0;
+Prh = 0;
+
+%Equations:
+dPaa_dt = 0;
+dPivc_dt = 0;
+dPao_dt = 0;
+dPrh_dt = 0;
+dDPext_dt = 0;
+
+%Time constraints:
+%time = 0;
+deltaT = 0.000001;
+endTime = 10;
+
+time_place = 0:0.01:10;
+pre_placeholder_Paa = zeros(1,1001);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+index = 1;
+%%%% Update Pressure:
+for time = 0:deltaT:endTime
+    %index = index + 1;
+    %plot(time, Paa, time, Pivc, time, Pao, time, Prh);
+    %hold on;
+    
+    
+	dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
+    Pao_seg = Prh - Pao;
+    if(Pao_seg < 0)
+        Pao_seg = 0;
+    end
+    
+    Prh_seg = Prh - Pao;%checking for neg value for dPrh
+    if(Prh_seg < 0)
+        Prh_seg = 0;
+    end
+	  
+    dPaa_dt = dDPext_dt + ( (1/Cao) * ( ((1/Rsa)*(Pao - Paa)) - ((1/Rl)*(Paa - Pivc)) ) );
+    dPivc_dt = dDPext_dt + ( (1/Civc) * ( ((1/Rl)*(Paa - Pivc)) - ((1/Rsv)*(Pivc - Prh)) ) );
+    dPao_dt = (1/Cao) * ( ((1/Rp) * Pao_seg) - ((1/Rsa) * (Pao - Paa)) - ((1/Rvo) * (Pao - Prh)) );
+    dPrh_dt = (1/Crh) * ( ((1/Rsv) * (Pivc - Prh)) - ((1/Rp) * Prh_seg) - ((1/Rvo) * (Pao - Prh)) );
+  
+    Paa = Paa + (deltaT * dPaa_dt);
+    Pivc = Pivc + (deltaT * dPivc_dt);
+    Pao = Pao + (deltaT * dPao_dt);
+    Prh = Prh + (deltaT * dPrh_dt);
+    
+     if mod(time,.01) == 0
+         pre_placeholder_Paa(index)= Paa;
+         index = index + 1;
+     end
+end
+
+graph
+plot(time_place,pre_placeholder_Paa)
+
+disp(dDPext_dt);
+disp(time)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
