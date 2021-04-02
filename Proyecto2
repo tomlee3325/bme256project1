@@ -24,9 +24,14 @@ Paa = 0;
 Pivc = 0;
 Pao = 0;
 Prh = 0;
-
-
 Cpp = Pao - Prh; %Central Perfusion Pressure or whatever it's called for abdominal CPR
+
+%Figures 
+f1 = figure('Name', 'Abdominal Aortic Pressure');
+f2 = figure('Name', 'Vena Cava Pressure');
+f3 = figure('Name', 'Thoracic Aorta Pressure');
+f4 = figure('Name', 'Right Heart Pressure');
+f5 = figure('Name', 'Central Perfusion Pressure');
 
 %Equations:
 dPaa_dt = 0;
@@ -36,22 +41,23 @@ dPrh_dt = 0;
 dDPext_dt = 0;
 
 %Time constraints:
-%time = 0;
+time = 0;
 deltaT = 0.000001;
 endTime = 10;
 
 time_place = 0:0.01:10;
 pre_placeholder_Paa = zeros(1,1001);
+pre_placeholder_Pao = zeros(1,1001);
+pre_placeholder_Pivc = zeros(1,1001);
+pre_placeholder_Prh = zeros(1,1001);
+pre_placeholder_Cpp = zeros(1,1001);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 index = 1;
 %%%% Update Pressure:
-for time = 0:deltaT:endTime
-    %index = index + 1;
-    %plot(time, Paa, time, Pivc, time, Pao, time, Prh);
-    %hold on;
+for time = 0:deltaT:endTime 
     
-    
-	dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
+    dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
     Pao_seg = Prh - Pao;
     if(Pao_seg < 0)
         Pao_seg = 0;
@@ -71,16 +77,46 @@ for time = 0:deltaT:endTime
     Pivc = Pivc + (deltaT * dPivc_dt);
     Pao = Pao + (deltaT * dPao_dt);
     Prh = Prh + (deltaT * dPrh_dt);
+    Cpp = Pao - Prh;
     
      if mod(time,.01) == 0
-         pre_placeholder_Paa(index)= Paa;
+         pre_placeholder_Paa(index) = Paa;
+         pre_placeholder_Pivc(index) = Pivc;
+         pre_placeholder_Prh(index ) = Prh;
+         pre_placeholder_Pao(index) = Pao;
+         pre_placeholder_Cpp(index) = Cpp;
          index = index + 1;
+         
      end
 end
 
-graph
-plot(time_place,pre_placeholder_Paa)
+figure(f1);
+plot(time_place,pre_placeholder_Paa);
+xlabel('Time');
+ylabel('Pressure');
+title('Abdominal Aortic Pressure vs Time');
 
-disp(dDPext_dt);
-disp(time)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(f2);
+plot(time_place, pre_placeholder_Pivc);
+xlabel('Time');
+ylabel('Pressure');
+title('Vena Cava Pressure vs Time');
+
+figure(f3);
+plot(time_place, pre_placeholder_Pao);
+xlabel('Time');
+ylabel('Pressure');
+title('Thoracic Aorta Pressure vs Time');
+
+figure(f4);
+plot(time_place, pre_placeholder_Prh);
+xlabel('Time');
+ylabel('Pressure');
+title('Right Heart Pressure vs Time');
+
+figure(f5);
+plot(time_place, pre_placeholder_Cpp);
+xlabel('Time');
+ylabel('Pressure');
+title('Central Perfusion Pressure vs Time');
+
