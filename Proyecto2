@@ -25,6 +25,9 @@ Pivc = 0;
 Pao = 0;
 Prh = 0;
 
+
+Cpp = Pao - Prh; %Central Perfusion Pressure or whatever it's called for abdominal CPR
+
 %Equations:
 dPaa_dt = 0;
 dPivc_dt = 0;
