@@ -89,6 +89,9 @@ for time = 0:deltaT:endTime
          
      end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% Plotting %%%%
 
 figure(f1);
 plot(time_place,pre_placeholder_Paa);
