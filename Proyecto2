@@ -55,9 +55,13 @@ pre_placeholder_Cpp = zeros(1,1001);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 index = 1;
 %%%% Update Pressure:
-for time = 0:deltaT:endTime 
+for time = 0:deltaT:endTime
+    %index = index + 1;
+    %plot(time, Paa, time, Pivc, time, Pao, time, Prh);
+    %hold on;
     
-    dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
+    
+	dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
     Pao_seg = Prh - Pao;
     if(Pao_seg < 0)
         Pao_seg = 0;
@@ -89,9 +93,12 @@ for time = 0:deltaT:endTime
          
      end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%% Plotting %%%%
+CppFunct = sineFit(time_place, pre_placeholder_Cpp);
+syms x;
+CppModel1 = 22.454 * (sin(2 * pi * 1.3324 * x + 4.6712)) + 14.4168
+CppModel = CppFunct(2) * (sin(2 * pi * CppFunct(3) * x + CppFunct(4))) + CppFunct(1);
+areaCpp = (int(CppModel1, 3, 3.75)) / 0.75
 
 figure(f1);
 plot(time_place,pre_placeholder_Paa);
@@ -122,4 +129,7 @@ plot(time_place, pre_placeholder_Cpp);
 xlabel('Time');
 ylabel('Pressure');
 title('Central Perfusion Pressure vs Time');
+hold on
+
+%plot(time_place, CppModel(time_place), 'b-');
 
