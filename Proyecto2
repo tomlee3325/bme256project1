@@ -94,11 +94,11 @@ for time = 0:deltaT:endTime
      end
 end
 
-CppFunct = sineFit(time_place, pre_placeholder_Cpp);
+CppFunct = sineFit(time_place, pre_placeholder_Cpp)
 syms x;
-CppModel1 = 22.454 * (sin(2 * pi * 1.3324 * x + 4.6712)) + 14.4168
-CppModel = CppFunct(2) * (sin(2 * pi * CppFunct(3) * x + CppFunct(4))) + CppFunct(1);
-areaCpp = (int(CppModel1, 3, 3.75)) / 0.75
+CppModel = double(CppFunct(2)) * (sin(2 * pi * double(CppFunct(3)) * x + double(CppFunct(4)))) + double(CppFunct(1));
+areaCpp = double((int(CppModel, 3, 3.75)) / 0.75)
+
 
 figure(f1);
 plot(time_place,pre_placeholder_Paa);
