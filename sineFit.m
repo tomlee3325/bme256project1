@@ -48,7 +48,7 @@ fs = (0:n2)/n/T;% frequency scale
 % %FFT parameters at peak
 [maxFFT,maxFFTindx]=max(P1);%Peak magnitude and location
 fPeak=fs(maxFFTindx);% f at peak
-Phip=angle(Y(maxFFTindx))+pi/2;%Phi-Peak is for cos, sin(90°+alpha)=cos(betta), alpha=-betta
+Phip=angle(Y(maxFFTindx))+pi/2;%Phi-Peak is for cos, sin(90Â°+alpha)=cos(betta), alpha=-betta
 Phip=Phip-x(1)*fPeak*pi2;%shift for phi at x=0
 if Phip<0;Phip=2*pi+Phip;end
 %% Fitting
@@ -148,7 +148,7 @@ if SineParams(4)<0
   SineParams(4)=SineParams(4)+pi2;
 end
 if boolGraphic
-  PlotResults(x,y,SineParams,paramsFFTp,fs,P1,maxFFTindx,maxFFT);
+  %PlotResults(x,y,SineParams,paramsFFTp,fs,P1,maxFFTindx,maxFFT);
 end
 function sse = sseval(SineParams,x,y)
 offs = SineParams(1);
@@ -198,9 +198,9 @@ pFFTin=plot(fs,P1,'r-');
 xlabel('Frequency [Hz]');
 ylabel('Amplitude')
 hold on;
-pFFTmax=plot(fs(maxFFTindx),maxFFT,'r+','MarkerSize',12);%max FFT
-pFFTresult=plot(SineParams(3),SineParams(2),'b+','LineWidth',2);
-plot([SineParams(3),SineParams(3)],[0,max(max(P1)*1.01,SineParams(2))],'b-');
+%pFFTmax=plot(fs(maxFFTindx),maxFFT,'r+','MarkerSize',12);%max FFT
+%pFFTresult=plot(SineParams(3),SineParams(2),'b+','LineWidth',2);
+%plot([SineParams(3),SineParams(3)],[0,max(max(P1)*1.01,SineParams(2))],'b-');
 hLeg=legend([pFFTin,pFFTresult,pFFTmax],'Input',...
   ['Result:     ' num2str(SineParams(2),3) ', ' num2str(SineParams(3),3) ' Hz'],...
   ['max FFT:  ' num2str(maxFFT,3) ', ' num2str(fs(maxFFTindx),3) ' Hz'],...
@@ -208,7 +208,7 @@ hLeg=legend([pFFTin,pFFTresult,pFFTmax],'Input',...
 title(hLeg,'        amplitude | frequency','FontSize',8);
 hold off;
 grid on;
-disp(['Result:        y= ' num2str(SineParams(1)) ' + ' num2str(SineParams(2)) ...
-  ' * sin(2*pi*' num2str(SineParams(3)) '+' num2str(SineParams(4)) ')   MSE: ' num2str(SineParams(5))]);
-disp(['FFT:           y= ' num2str(paramsFFTp(1)) ' + ' num2str(paramsFFTp(2)) ...
-  ' * sin(2*pi*' num2str(paramsFFTp(3)) '+' num2str(paramsFFTp(4)) ')' ]);
+%disp(['Result:        y= ' num2str(SineParams(1)) ' + ' num2str(SineParams(2)) ...
+%  ' * sin(2*pi*' num2str(SineParams(3)) '+' num2str(SineParams(4)) ')   MSE: ' num2str(SineParams(5))]);
+%disp(['FFT:           y= ' num2str(paramsFFTp(1)) ' + ' num2str(paramsFFTp(2)) ...
+%  ' * sin(2*pi*' num2str(paramsFFTp(3)) '+' num2str(paramsFFTp(4)) ')' ]);
