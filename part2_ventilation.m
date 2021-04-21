@@ -46,7 +46,7 @@ dPivc_dt = 0;
 dPao_dt = 0;
 dPrh_dt = 0;
 dDPext_dt = 0;
-dV = 0;
+dVol = 0; %Volume (13)
 dPlung = 0;
 flowin = 0;
 flowout = 0;
@@ -74,18 +74,32 @@ for time = 0:deltaT:endTime
     %hold on;
     
     %11, 12, 13
-	dDPext_dt = (deltaPmax / 2) * omega * sin(omega * time); %change in external pressure  %Probably want to replace 50 with deltaPmax / 2
-    dV = dDPext_dt * (power(Ad, 2) / (power(Kd, 2)));
-    dPlung = (dV / Clung) * time;
-    flowin = Pmax * power(Ad, 2) * ((omega * sin(omega * time)) / (power(Kd, 2)));
+	dDPext_dt = (Pmax / 2) * omega * sin(omega * time); %change in external pressure  %Probably want to replace 50 with deltaPmax / 2
+    dVol = dDPext_dt * (power(Ad, 2) / Kd);
+    flowin = (Pmax * power(Ad, 2) * omega * sin(omega * time)) / (2 * Kd);
     flowout = dPlung / Rair;
+    dPlung = (Pmax * power(Ad, 2) * omega * sin(omega * time) / (Clung * 2 * Kd)) - dPlung / Rair; %(12)
+    
+    %part 12
+    %Lung Prssure
+    %dPlung / dt = (Ad ^2) * 
+	Plung = Plung + (deltaT * dPlung); %%Pressure
+    
+    %part 13
+    %Exaled Volume Volume
+    %%Not sure about this part
+    Vol = Vol + (deltaT * dVol);
     
     
-	  
+    
+    
    
     
      
 end
+
+
+%Determinations of tidal volume. 
 
 CppFunct = sineFit(time_place, pre_placeholder_Cpp);
 CppModel = double(CppFunct(2)) * (sin(2 * pi * double(CppFunct(3)) * x + double(CppFunct(4)))) + double(CppFunct(1));
