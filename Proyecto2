@@ -4,6 +4,7 @@
 
 Rate = 4 / 3;
 omega = 2 * pi * Rate;
+syms x;
 
 %Diaphragm
 Md = 4;
@@ -43,6 +44,7 @@ f2 = figure('Name', 'Vena Cava Pressure');
 f3 = figure('Name', 'Thoracic Aorta Pressure');
 f4 = figure('Name', 'Right Heart Pressure');
 f5 = figure('Name', 'Central Perfusion Pressure');
+f6 = figure('Name', 'Breath Volume(To be changed whenever :))');
 
 %Equations:
 dPaa_dt = 0;
@@ -67,6 +69,7 @@ pre_placeholder_Pao = zeros(1,1001);
 pre_placeholder_Pivc = zeros(1,1001);
 pre_placeholder_Prh = zeros(1,1001);
 pre_placeholder_Cpp = zeros(1,1001);
+pre_placeholder_Vbreath = zeros(1, 1001);
 %dV_store = zeroes(1, 1001);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,9 +83,15 @@ for time = 0:deltaT:endTime
     
 	dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
     dV = dDPext_dt * (power(Ad, 2) / (power(Kd, 2)));
-    dPlung = (dV / Clung) * time;
+    %dPlung = (1 / Clung) * (flowin - flowout); %Alternate defintion of
+    %dPlung, if there is something wrong with the other dPlung definition, this is an alternative one, the only
+    %problem right now is that for some reason this dPlung value returns
+    %Inf which means no plot would show up
+    dPlung = (dV * (power(Ad, 2))/ Clung * Kd);
     flowin = Pmax * power(Ad, 2) * ((omega * sin(omega * time)) / (power(Kd, 2)));
     flowout = dPlung / Rair;
+    flowairway = (dPlung * time) / Rair;
+    Vbreath = flowairway * time;
     
     Pao_seg = Prh - Pao;
     if(Pao_seg < 0)
@@ -111,6 +120,7 @@ for time = 0:deltaT:endTime
          pre_placeholder_Prh(index) = Prh;
          pre_placeholder_Pao(index) = Pao;
          pre_placeholder_Cpp(index) = Cpp;
+         pre_placeholder_Vbreath(index) = Vbreath;
          index = index + 1;
          
      end
@@ -150,6 +160,13 @@ figure(f5);
 xlabel('Time');
 ylabel('Pressure');
 title('Central Perfusion Pressure vs Time');
+hold on
+
+figure(f6);
+plot(time_place, pre_placeholder_Vbreath);
+xlabel('Time');
+ylabel('Volume of diaphragm');
+title('Diaphragm volume vs Time');
 hold on
 
 %plot(time_place, CppModel(time_place), 'b-');
