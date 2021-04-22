@@ -12,8 +12,9 @@ h = 0.01;   %
 Ad = 0.06; %in m2
 Aj = 0.03;
 deltaX = (Aj * h) / Ad;
+Plung = (Md * g) / Aj;
 
-Kd = (Ad * Plung) / deltaX;
+Kd = (Ad * Plung) / deltaX
 
 %Resistances:
 Rvo = 2700; % Vital organs: Heart & Brain (mmHg/(L/sec))
@@ -27,7 +28,6 @@ Rair = 0.014;
 Clung = (1 / 5) * 1.4;
 
 %Pressures:
-Plung = (Md * g) / Aj;
 deltaPmax = 100;
 
 
@@ -37,7 +37,7 @@ f2 = figure('Name', 'Vena Cava Pressure');
 f3 = figure('Name', 'Thoracic Aorta Pressure');
 f4 = figure('Name', 'Right Heart Pressure');
 f5 = figure('Name', 'Central Perfusion Pressure');
-f1 = figure('Exhaled Volume (L) vs time during OAC-CPR');
+f6 = figure('Name', 'Exhaled Volume (L) vs time during OAC-CPR');
 
 
 %Equations:
@@ -50,7 +50,9 @@ dVol = 0; %Volume (13)
 dPlung = 0;
 flowin = 0;
 flowout = 0;
+flowair = 0;
 Pmax = 100;
+Vol = 0;
 
 %Time constraints:
 time = 0;
@@ -63,7 +65,7 @@ pre_placeholder_Pao = zeros(1,1001);
 pre_placeholder_Pivc = zeros(1,1001);
 pre_placeholder_Prh = zeros(1,1001);
 pre_placeholder_Cpp = zeros(1,1001);
-%dV_store = zeroes(1, 1001);
+dV_store = zeros(1, 1001);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 index = 1;
@@ -77,8 +79,13 @@ for time = 0:deltaT:endTime
 	dDPext_dt = (Pmax / 2) * omega * sin(omega * time); %change in external pressure  %Probably want to replace 50 with deltaPmax / 2
     dVol = dDPext_dt * (power(Ad, 2) / Kd);
     flowin = (Pmax * power(Ad, 2) * omega * sin(omega * time)) / (2 * Kd);
-    flowout = dPlung / Rair;
-    dPlung = (Pmax * power(Ad, 2) * omega * sin(omega * time) / (Clung * 2 * Kd)) - dPlung / Rair; %(12)
+    flowout = (dPlung * time) / Rair;
+    dPlung = ((Pmax * power(Ad, 2) * omega * sin(omega * time) / (Clung * 2 * Kd)) - dPlung / Rair) * deltaT; %(12)
+    %dPlung = (1 / Clung) * (((power(Ad, 2) * dDPext_dt) / Kd) - (Plung / Rair));
+    %dPlung = (1 / Clung) * (flowin - flowout);
+    flowair = Plung / Rair;
+    dVlung = dPlung * deltaT;
+    %Vol = flowair * time;
     
     %part 12
     %Lung Prssure
@@ -88,9 +95,12 @@ for time = 0:deltaT:endTime
     %part 13
     %Exaled Volume Volume
     %%Not sure about this part
-    Vol = Vol + (deltaT * dVol);
+     Vol = Vol + dVlung;
     
-    
+     if mod(time,.01) == 0
+         dV_store(index) = Vol;
+         index = index + 1; 
+     end
     
     
    
@@ -101,9 +111,9 @@ end
 
 %Determinations of tidal volume. 
 
-CppFunct = sineFit(time_place, pre_placeholder_Cpp);
-CppModel = double(CppFunct(2)) * (sin(2 * pi * double(CppFunct(3)) * x + double(CppFunct(4)))) + double(CppFunct(1));
-areaCpp = double((int(CppModel, 3, 3.75)) / 0.75);
+%CppFunct = sineFit(time_place, pre_placeholder_Cpp);
+%CppModel = double(CppFunct(2)) * (sin(2 * pi * double(CppFunct(3)) * x + double(CppFunct(4)))) + double(CppFunct(1));
+%areaCpp = double((int(CppModel, 3, 3.75)) / 0.75);
 
 
 figure(f1);
@@ -137,4 +147,9 @@ ylabel('Pressure');
 title('Central Perfusion Pressure vs Time');
 hold on
 
-%plot(time_place, CppModel(time_place), 'b-');
+figure(f6);
+plot(time_place, dV_store);
+xlabel('Time');
+ylabel('Volume of diaphragm');
+title('Diaphragm volume vs Time');
+hold on
