@@ -1,0 +1,139 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% Initialization %%%%
+
+Rate = 4 / 3;
+omega = 2 * pi * Rate;
+
+
+%Resistances:
+Rvo = 2700; % Vital organs: Heart & Brain (mmHg/(L/sec))
+Rp = 180; % Pulmonary arteries, capillaries, veins (mmHg/(L/sec))
+Rsa = 60; % Small in line restance of aorta (mmHg/(L/sec))
+Rsv = 60;  % Small in line resistance of vena cava (mmHg/(L/sec))
+Rl = 5400; % Legs (mmHg/(L/sec))
+
+%Compliances:
+Cao = 0.00104167; % Thoracic aorta (L/mmHg)
+Caa = 0.00052083; % Abdominal aorta (external pressure) (L/mmHg)
+Civc =  30 * Caa; % I. vena cava (external pressure) (L/mmHg)
+Crh = 30 * Cao; % Right heart: S.vena cava, RA, RV (L/mmHg)
+
+%Pressures:
+Paa = 0; 
+Pivc = 0;
+Pao = 0;
+Prh = 0;
+Cpp = Pao - Prh; %Central Perfusion Pressure or whatever it's called for abdominal CPR
+meanCpp = 0;
+%Figures 
+f1 = figure('Name', 'Abdominal Aortic Pressure');
+f2 = figure('Name', 'Vena Cava Pressure');
+f3 = figure('Name', 'Thoracic Aorta Pressure');
+f4 = figure('Name', 'Right Heart Pressure');
+f5 = figure('Name', 'Central Perfusion Pressure');
+
+%Equations:
+dPaa_dt = 0;
+dPivc_dt = 0;
+dPao_dt = 0;
+dPrh_dt = 0;
+%dDPext_dt = 0;
+n = 0;
+%Time constraints:
+time = 0;
+deltaT = 0.000001;
+endTime = 10;
+
+time_place = 0:0.01:10;
+pre_placeholder_Paa = zeros(1,1001);
+pre_placeholder_Pao = zeros(1,1001);
+pre_placeholder_Pivc = zeros(1,1001);
+pre_placeholder_Prh = zeros(1,1001);
+pre_placeholder_Cpp = zeros(1,1001);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+index = 1;
+%%%% Update Pressure:
+for time = 0:deltaT:endTime
+    %index = index + 1;
+    %plot(time, Paa, time, Pivc, time, Pao, time, Prh);
+    %hold on;
+    
+    
+	dDPext_dt = 50 * omega * sin(omega * time); %change in external pressure
+   % Pao_seg = Prh - Pao;
+   % if(Pao_seg < 0)
+   %     Pao_seg = 0;
+   % end
+    
+   % Prh_seg = Prh - Pao;%checking for neg value for dPrh
+   % if(Prh_seg < 0)
+   %     Prh_seg = 0;
+   % end
+	  
+    dPaa_dt = dDPext_dt + ( (1/Caa) * ( ((1/Rsa)*(Pao - Paa)) - ((1/Rl)*(Paa - Pivc)) ) );
+    dPivc_dt = dDPext_dt + ( (1/Civc) * ( ((1/Rl)*(Paa - Pivc)) - ((1/Rsv)*(Pivc - Prh)) ) );
+    dPao_dt = (1/Cao) * ( max(0,((Prh-Pao)/Rp)) - ((Pao-Paa)/Rsa) - ((Pao-Prh)/Rvo) );
+    dPrh_dt = (1/Crh) * (((1/Rsv) * (Pivc - Prh)) - max(0,((Prh-Pao)/Rp)) + ((1/Rvo) * (Pao-Prh)));
+   
+  
+    Paa = Paa + (deltaT * dPaa_dt);
+    Pivc = Pivc + (deltaT * dPivc_dt);
+    Pao = Pao + (deltaT * dPao_dt);
+    Prh = Prh + (deltaT * dPrh_dt);
+    Cpp = Pao - Prh;
+    meanCpp = meanCpp + Cpp;
+    n = n+1;
+    
+     if mod(time,.01) == 0
+         pre_placeholder_Paa(index) = Paa;
+         pre_placeholder_Pivc(index) = Pivc;
+         pre_placeholder_Prh(index ) = Prh;
+         pre_placeholder_Pao(index) = Pao;
+         pre_placeholder_Cpp(index) = Cpp;
+         index = index + 1;
+         
+     end
+end
+meanCpp = meanCpp/n;
+
+%CppFunct = sineFit(time_place, pre_placeholder_Cpp);
+%syms x;
+%CppModel1 = 22.454 * (sin(2 * pi * 1.3324 * x + 4.6712)) + 14.4168
+%CppModel = CppFunct(2) * (spin(2 * pi * CppFunct(3) * x + CppFunct(4))) + CppFunct(1);
+%areaCpp = double((int(CppModel1, 3, 3.75)) / 0.75)
+%Test_CPP = mean(Cpp,'all')
+
+figure(f1);
+plot(time_place,pre_placeholder_Paa);
+xlabel('Time');
+ylabel('Pressure');
+title('Abdominal Aortic Pressure vs Time');
+
+figure(f2);
+plot(time_place, pre_placeholder_Pivc);
+xlabel('Time');
+ylabel('Pressure');
+title('Vena Cava Pressure vs Time');
+
+figure(f3);
+plot(time_place, pre_placeholder_Pao);
+xlabel('Time');
+ylabel('Pressure');
+title('Thoracic Aorta Pressure vs Time');
+
+figure(f4);
+plot(time_place, pre_placeholder_Prh);
+xlabel('Time');
+ylabel('Pressure');
+title('Right Heart Pressure vs Time');
+
+figure(f5);
+plot(time_place, pre_placeholder_Cpp);
+xlabel('Time');
+ylabel('Pressure');
+title('Central Perfusion Pressure vs Time');
+hold on
+
+%plot(time_place, CppModel(time_place), 'b-');
