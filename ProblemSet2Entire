@@ -161,7 +161,7 @@ title('Coronary Perfusion Pressure vs Time');
 
 figure(f6);
 plot(timecount, Vol);
-xlabel('Time');
-ylabel('Volume of diaphragm');
-title('Diaphragm volume vs Time');
+xlabel('Time(sec)');
+ylabel('Volume of diaphragm (L)');
+title({['Exhaled Volume (L) vs time during OAC-CPR'],['Diaphragm volume vs Time]']});
 hold on
