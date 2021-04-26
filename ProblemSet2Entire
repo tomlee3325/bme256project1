@@ -3,17 +3,18 @@
 
 Rate = 4 / 3; % 80/60 but simpified the constant abdominal compression rate in Hz
 omega = 2 * pi * Rate; % angular frequency
-deltaPmax = 100;
+deltaPmax = 100; 
 
 %Diaphragm
-Md = 4;    %%Mass of the jug? 
-g = 9.81;  %Gravitational Constant
+Md = 4;    % Mass of the jug
+g = 9.81;  % Gravitational Constant
 h = 0.01;  % cm
 Ad = 0.06; % area of abdomen
 Aj = 0.03; % area of jug
 deltaX = (Aj * h) / Ad;
 P_lung = (Md * g) / Aj;
 Kd = (Ad * P_lung) / deltaX;
+Vol_aa = 0.05; % Volume of abdominal aorta in m^3
 
 %Resistances:
 Rvo = 2700; % Vital organs: Heart & Brain (mmHg/(L/sec))
@@ -45,6 +46,7 @@ f3 = figure('Name', 'Thoracic Aorta Pressure');
 f4 = figure('Name', 'Right Heart Pressure');
 f5 = figure('Name', 'Coronary Perfusion Pressure');
 f6 = figure('Name', 'Exhaled Volume (L) vs time during OAC-CPR');
+f7 = figure('Name', 'Abdominal Aorta Volume');
 
 
 %Equations Initial:
@@ -52,6 +54,7 @@ dPaa_dt = 0; % abdominal aorta
 dPivc_dt = 0; % inferior vena cava
 dPao_dt = 0; % thoracic aorta
 dPrh_dt = 0; % right heart
+dVol_aa = 0; 
 n = 0;
 dVol = 0; %Volume (13)
 dPlung = 0;% pressure of lung
@@ -65,12 +68,13 @@ deltaT = 0.000001; % increments by .000001
 endTime = 10; % 10 seconds
 time_place = 0:0.01:10; % array for plotting graph
 
-%Place holder to store Pressures
+%Place holder to store Pressures & Volumes
 pre_placeholder_Paa = zeros(1,1001); % abdominal aorta 
 pre_placeholder_Pao = zeros(1,1001); % thoracic aorta
 pre_placeholder_Pivc = zeros(1,1001); % inferior vena cava
 pre_placeholder_Prh = zeros(1,1001); % right heart
 pre_placeholder_Cpp = zeros(1,1001); % coronary perfusion pressure
+pre_placeholder_Vol_aa = zeros(1, 1001);
 dV_store = zeros(1, 1001); % change of volume
 Plung = zeros(1,1001); % Pressure of lung
 Vol = zeros(1, 1001); % volume in lung
@@ -83,17 +87,19 @@ for time = 0:deltaT:endTime
   %change in external pressure
 	dDPext_dt = (deltaPmax/2) * omega * sin(omega * time); 
 	  
-   %calcualting the change in pressure
+   %calcualting the change in pressure and volume
     dPaa_dt = dDPext_dt + ( (1/Caa) * ( ((1/Rsa)*(Pao - Paa)) - ((1/Rl)*(Paa - Pivc)) ) );
     dPivc_dt = dDPext_dt + ( (1/Civc) * ( ((1/Rl)*(Paa - Pivc)) - ((1/Rsv)*(Pivc - Prh)) ) );
     dPao_dt = (1/Cao) * ( max(0,((Prh-Pao)/Rp)) - ((Pao-Paa)/Rsa) - ((Pao-Prh)/Rvo) );
     dPrh_dt = (1/Crh) * (((1/Rsv) * (Pivc - Prh)) - max(0,((Prh-Pao)/Rp)) + ((1/Rvo) * (Pao-Prh)));
+    dVol_aa = Caa * dPaa_dt;
    
-  %Updates the Pressure for each iteration
+  %Updates the Pressure and Volume for each iteration
     Paa = Paa + (deltaT * dPaa_dt);
     Pivc = Pivc + (deltaT * dPivc_dt);
     Pao = Pao + (deltaT * dPao_dt);
     Prh = Prh + (deltaT * dPrh_dt);
+    Vol_aa = Vol_aa - (dVol_aa * deltaT);
     
     Cpp = Pao - Prh; % finding the coronary perfusion pressure 
     meanCpp = meanCpp + Cpp;
@@ -106,6 +112,7 @@ for time = 0:deltaT:endTime
          pre_placeholder_Prh(index ) = Prh;
          pre_placeholder_Pao(index) = Pao;
          pre_placeholder_Cpp(index) = Cpp;
+         pre_placeholder_Vol_aa(index) = Vol_aa;
          index = index + 1;
          
      end
@@ -164,4 +171,11 @@ plot(timecount, Vol);
 xlabel('Time(sec)');
 ylabel('Volume of diaphragm (L)');
 title({['Exhaled Volume (L) vs time during OAC-CPR'],['Diaphragm volume vs Time]']});
+hold on
+
+figure(f7);
+plot(time_place, pre_placeholder_Vol_aa);
+xlabel('Time (sec)');
+ylabel('Vol (L)');
+title("Volume of Abdominal Aorta vs Time");
 hold on
