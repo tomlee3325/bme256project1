@@ -3,7 +3,7 @@
 
 Rate = 4 / 3; % 80/60 but simpified the constant abdominal compression rate in Hz
 omega = 2 * pi * Rate; % angular frequency
-deltaPmax = 170;
+deltaPmax = 100; % Pressure max mmHg
 
 %Diaphragm
 Md = 4;    %%Mass of the jug? 
